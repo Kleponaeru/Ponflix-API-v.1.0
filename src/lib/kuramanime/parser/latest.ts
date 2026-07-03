@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import type { LatestAnime } from "@/types/anime";
+import type { LatestAnime } from "@/types/latest";
 import { parseAnimeUrl } from "@/lib/utils/url";
 
 export function parseLatest(html: string): LatestAnime[] {

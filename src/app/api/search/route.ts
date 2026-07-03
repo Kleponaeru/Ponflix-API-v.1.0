@@ -1,18 +1,43 @@
-import type { SearchAnimeItem } from "@/types/anime";
-import type { ApiResponse } from "@/types/response";
 import { searchAnime } from "@/lib/kuramanime/search";
+import type { SearchAnime } from "@/types/search";
+import type { ApiResponse } from "@/types/response";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const query = url.searchParams.get("q") ?? "";
+  const query = url.searchParams.get("q")?.trim();
 
-  const results = await searchAnime(query);
+  if (!query) {
+    return Response.json(
+      {
+        success: false,
+        error: "Query parameter 'q' is required.",
+      },
+      { status: 400 }
+    );
+  }
 
-  const payload: ApiResponse<SearchAnimeItem[]> & { query: string } = {
-    success: true,
-    data: results,
-    query,
-  };
+  try {
+    const results = await searchAnime(query);
 
-  return Response.json(payload);
+    const payload: ApiResponse<SearchAnime[]> & {
+      query: string;
+      total: number;
+    } = {
+      success: true,
+      query,
+      total: results.length,
+      data: results,
+    };
+
+    return Response.json(payload);
+  } catch (error) {
+    return Response.json(
+      {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
 }

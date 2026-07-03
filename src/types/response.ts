@@ -8,3 +8,4 @@ export interface ApiErrorResponse {
   error: string;
 }
 
+export type ApiResult<T> = ApiResponse<T> | ApiErrorResponse;

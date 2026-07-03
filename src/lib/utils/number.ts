@@ -11,3 +11,12 @@ export function toInt(value: string | number | null | undefined, fallback = 0) {
   return fallback;
 }
 
+export function parseNumber(value: string): number {
+  return Number(
+    value
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .trim()
+  );
+}
+
