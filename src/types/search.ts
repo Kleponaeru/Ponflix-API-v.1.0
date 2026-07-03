@@ -1,11 +1,7 @@
 import type { AnimeBase } from "./anime";
 
 export interface SearchAnime extends AnimeBase {
-  score: number;
+  score: number | null;
 
-  type: string;
-  quality: string;
-
-  comments: number;
-  views: number;
+  type: string | null;
 }

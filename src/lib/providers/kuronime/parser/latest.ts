@@ -1,5 +1,7 @@
 import * as cheerio from "cheerio";
 
+import { parseAnimeCard } from "./card";
+
 import type { LatestAnime } from "@/types/latest";
 
 import { parseNumber } from "@/lib/utils/number";
@@ -12,16 +14,7 @@ export function parseLatest(html: string): LatestAnime[] {
   $("article.bsu").each((_, element) => {
     const item = $(element);
 
-    const anchor = item.find("a").first();
-
-    const url = anchor.attr("href") ?? "";
-
-    const path = url ? new URL(url).pathname : "";
-
-    const slug =
-      path
-        .replace(/^\/|\/$/g, "")
-        .replace(/^nonton-/, "");
+    const base = parseAnimeCard(item);
 
     const headline = item.find('h2[itemprop="headline"]').text().trim();
 
@@ -31,23 +24,13 @@ export function parseLatest(html: string): LatestAnime[] {
       ? Number(episodeMatch[1])
       : 0;
 
-    const title = headline
-      .replace(/Episode\s+\d+/i, "")
-      .replace(/Subtitle Indonesia/i, "")
-      .trim();
-
     animeList.push({
-      animeId: null,
+      ...base,
 
-      slug,
-
-      title,
-
-      path,
-      url,
-
-      thumbnail:
-        item.find('img[itemprop="image"]').attr("src") ?? "",
+      title: headline
+        .replace(/Episode\s+\d+/i, "")
+        .replace(/Subtitle Indonesia/i, "")
+        .trim(),
 
       currentEpisode,
       totalEpisodes: null,
@@ -58,10 +41,10 @@ export function parseLatest(html: string): LatestAnime[] {
       hot: false,
 
       views: parseNumber(
-        item.find(".post-views-count").text()
+        item.find(".post-views-count").text(),
       ),
 
-      timeAgo: item.find(".time").text().trim(),
+      timeAgo: item.find(".time").text().trim() || null,
     });
   });
 

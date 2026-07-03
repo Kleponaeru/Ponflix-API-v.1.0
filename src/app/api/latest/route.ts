@@ -1,4 +1,4 @@
-import { getLatestAnime } from "@/lib/kuronime/latest";
+import { getLatestAnime } from "@/lib/providers/kuronime/latest";
 
 export async function GET() {
   try {

@@ -1,6 +1,8 @@
 import type { AnimeBase } from "./anime";
 
 export interface LatestAnime extends AnimeBase {
+  animeId?: number;
+
   currentEpisode: number;
   totalEpisodes: number | null;
 

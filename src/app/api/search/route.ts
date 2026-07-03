@@ -1,4 +1,4 @@
-import { searchAnime } from "@/lib/kuronime/search";
+import { searchAnime } from "@/lib/providers/kuronime/search";
 import type { SearchAnime } from "@/types/search";
 import type { ApiResponse } from "@/types/response";
 

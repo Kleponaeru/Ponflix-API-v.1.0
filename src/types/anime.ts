@@ -1,6 +1,4 @@
 export interface AnimeBase {
-  animeId: number | null;
-
   slug: string;
 
   title: string;
