@@ -6,5 +6,5 @@ export interface AnimeBase {
   path: string;
   url: string;
 
-  thumbnail: string;
+  thumbnail?: string;
 }
