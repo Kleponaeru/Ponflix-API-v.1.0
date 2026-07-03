@@ -1,1 +1,1 @@
-export const BASE_URL = "https://v18.kuramanime.ing";
+export const BASE_URL = "https://kuronime.sbs";

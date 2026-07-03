@@ -1,6 +1,6 @@
 import type { EpisodeDetails } from "@/types/episode";
 import type { ApiResponse } from "@/types/response";
-import { getEpisode } from "@/lib/kuramanime/episode";
+import { getEpisode } from "@/lib/kuronime/episode";
 
 export async function GET(
   _request: Request,
