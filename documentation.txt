@@ -2,32 +2,24 @@
 
 ## Goal
 
-Build a clean, maintainable, production-ready Anime REST API using **Next.js App Router** and **TypeScript**.
+Build a clean, provider-based Anime REST API using **Next.js 16 App Router + TypeScript**.
 
-The API scrapes data from **Kuramanime** and is intended to be deployed on **Vercel**.
-
-Current source:
-
-* Base URL: `https://v18.kuramanime.ing`
-
-The project emphasizes:
-
-* Clean Architecture
-* Single Responsibility Principle
-* Reusable parsers
-* Strong TypeScript typing
-* Minimal duplicated code
-* Easy expansion for future endpoints
+The API should expose a consistent JSON format while scraping data from anime providers. We originally started with Kuramanime but switched to **Kuronime** because Kuramanime blocks production/Vercel requests (403 Forbidden).
 
 ---
 
-# Tech Stack
+# Current Provider
 
-* Next.js (App Router)
-* TypeScript
-* Cheerio (HTML parsing)
-* Native fetch API
-* Vercel deployment
+Current provider:
+
+* Kuronime
+* Base URL:
+
+  ```ts
+  export const BASE_URL = "https://kuronime.sbs";
+  ```
+
+All scraping currently targets Kuronime.
 
 ---
 
@@ -35,27 +27,23 @@ The project emphasizes:
 
 ```
 src/
-│
 ├── app/
 │   └── api/
 │       ├── latest/
-│       │   └── route.ts
 │       └── search/
-│           └── route.ts
 │
 ├── lib/
-│   ├── kuramanime/
-│   │   ├── client.ts
-│   │   ├── constants.ts
-│   │   ├── latest.ts
-│   │   ├── search.ts
-│   │   │
-│   │   └── parser/
+│   ├── providers/
+│   │   └── kuronime/
+│   │       ├── client.ts
 │   │       ├── latest.ts
-│   │       └── search.ts
+│   │       ├── search.ts
+│   │       └── parser/
+│   │           ├── card.ts
+│   │           ├── latest.ts
+│   │           └── search.ts
 │   │
 │   └── utils/
-│       ├── api.ts
 │       ├── number.ts
 │       └── url.ts
 │
@@ -63,6 +51,7 @@ src/
     ├── anime.ts
     ├── latest.ts
     ├── search.ts
+    ├── episode.ts
     └── response.ts
 ```
 
@@ -70,359 +59,243 @@ src/
 
 # Architecture
 
-Every endpoint follows the same flow.
+The project follows a strict separation of responsibilities.
 
-```
-API Route
-    ↓
-Service
-    ↓
-Kuramanime Client
-    ↓
-HTTP Request
-    ↓
-Parser
-    ↓
-Typed Response
+## client.ts
+
+Responsible only for HTTP requests.
+
+Example:
+
+```ts
+const html = await kuronimeClient.get("/");
 ```
 
-Responsibilities:
-
-* Route
-
-  * Read query/path params
-  * Validate input
-  * Return API response
-
-* Service
-
-  * Fetch HTML from Kuramanime
-
-* Client
-
-  * Generic HTTP GET wrapper
-  * Uses BASE_URL
-
-* Parser
-
-  * Convert HTML into typed objects
-
-* Types
-
-  * Shared interfaces only
+No parsing logic belongs here.
 
 ---
 
-# Constants
+## latest.ts / search.ts
 
-```
-BASE_URL = https://v18.kuramanime.ing
+Responsible only for:
+
+1. Fetch HTML
+2. Pass HTML into parser
+
+Example:
+
+```ts
+const html = await kuronimeClient.get(...);
+
+return parseLatest(html);
 ```
 
-Stored inside:
-
-```
-src/lib/kuramanime/constants.ts
-```
+No scraping logic should exist here.
 
 ---
 
-# Current Utility Functions
+## parser/
 
-## parseAnimeUrl()
+Responsible only for converting HTML into typed objects.
 
-Location:
-
-```
-src/lib/utils/url.ts
-```
-
-Returns:
+Example:
 
 ```
-{
-    animeId,
-    slug,
-    episode,
-    path
-}
+HTML
+ ↓
+Cheerio
+ ↓
+LatestAnime[]
 ```
 
-Used by every parser instead of regex duplication.
+Parsers never perform HTTP requests.
 
 ---
 
-## parseNumber()
+# Shared Card Parser
 
-Location:
-
-```
-src/lib/utils/number.ts
-```
-
-Purpose:
-
-Converts strings such as:
+A reusable parser exists:
 
 ```
-761.228
-13.690
-8.19
+parser/card.ts
 ```
 
-into numbers:
+It extracts fields shared by multiple pages:
 
-```
-761228
-13690
-8.19
-```
+* slug
+* url
+* path
+* thumbnail
+
+It intentionally does **NOT** parse:
+
+* title
+* episode
+* score
+* views
+
+Those are page-specific and handled inside each parser.
 
 ---
 
-## API Helpers
+# Types
 
-Location:
+Shared base type:
 
-```
-src/lib/utils/api.ts
-```
-
-Functions:
-
-```
-ok(data, meta?)
-fail(message, status?)
-```
-
-Uses:
-
-```
-NextResponse.json(...)
-```
-
-All routes should use these helpers instead of calling `Response.json()` directly.
-
----
-
-# Shared Types
-
-## AnimeBase
-
-Location:
-
-```
-src/types/anime.ts
-```
-
-Contains common fields:
-
-```
-animeId
-slug
-title
-path
-url
-thumbnail
-```
-
-Every anime-related interface extends this.
-
----
-
-## LatestAnime
-
-Location:
-
-```
-src/types/latest.ts
-```
-
-Fields:
-
-```
+```ts
 AnimeBase
-
-currentEpisode
-totalEpisodes
-
-type
-quality
-
-hot
 ```
 
----
+Contains:
 
-## SearchAnime
-
-Location:
-
-```
-src/types/search.ts
-```
-
-Fields:
-
-```
-AnimeBase
-
-score
-
-type
-quality
-
-comments
-views
-```
-
----
-
-# API Response Types
-
-Location:
-
-```
-src/types/response.ts
-```
-
-```
-ApiResponse<T>
-
-ApiErrorResponse
-
-ApiResult<T>
-```
-
-Responses are discriminated unions:
-
-Success:
-
-```
-{
-    success: true,
-    data: ...
-}
-```
-
-Error:
-
-```
-{
-    success: false,
-    error: "..."
-}
-```
-
----
-
-# Current Endpoints
-
-## GET /api/latest
-
-Status:
-
-Implemented.
-
-Returns latest episode releases.
-
-Parser:
-
-```
-parser/latest.ts
-```
-
----
-
-## GET /api/search?q=
-
-Status:
-
-Implemented.
-
-Fetches:
-
-```
-/anime?search=<query>&order_by=oldest
-```
-
-Parser:
-
-```
-parser/search.ts
-```
-
-Returns:
-
-* animeId
 * slug
 * title
 * path
 * url
 * thumbnail
-* score
-* type
-* quality
-* comments
-* views
+
+Other files extend AnimeBase:
+
+```
+LatestAnime
+SearchAnime
+Episode
+AnimeDetails (later)
+```
 
 ---
 
-# Coding Standards
+# Latest Endpoint
 
-Always follow these rules:
+Endpoint:
 
-* Keep files small and focused.
-* One responsibility per file.
-* Never duplicate parsing logic.
-* Create reusable helper functions when needed.
-* Reuse utility functions instead of writing inline regex.
-* Keep TypeScript types strict.
-* Prefer reusable abstractions over copy-paste.
-* Keep API responses consistent using `ok()` and `fail()`.
-* Prefer numbers over numeric strings whenever possible.
-* Build scalable code suitable for many future endpoints.
+```
+GET /api/latest
+```
 
----
+Scrapes:
 
-# Future Refactor
+```
+https://kuronime.sbs/
+```
 
-Before adding many more endpoints, create shared parser helpers for common anime card fields such as:
+Parses:
 
 * title
+* slug
 * thumbnail
-* type
-* quality
+* url
+* path
+* currentEpisode
+* totalEpisodes (currently null)
+* type (currently null)
+* quality (currently null)
+* hot (currently false)
+* views
+* timeAgo
 
-This will reduce duplicated code between latest, search, ongoing, completed, genre, season, and other parsers.
+Uses:
+
+```
+parseLatest()
+```
 
 ---
 
-# Planned Endpoints
+# Search Endpoint
 
-Priority order:
-
-1. Search ✅
-2. Latest ✅
-3. Anime Detail
-4. Episode List
-5. Episode Detail
-6. Ongoing
-7. Completed
-8. Schedule
-9. Genres
-10. Genre Anime
-11. Season Anime
-12. Batch Download
-
-Each endpoint should follow the same architecture:
+Endpoint:
 
 ```
-Route
-→ Service
-→ Client
-→ Parser
-→ Typed Model
+GET /api/search?q=naruto
 ```
 
-No endpoint should scrape HTML directly inside the route.
+Scrapes:
+
+```
+https://kuronime.sbs/?s=<query>
+```
+
+Parses:
+
+* title
+* slug
+* thumbnail
+* url
+* path
+* type
+* score
+
+Uses:
+
+```
+parseSearch()
+```
+
+---
+
+# Utilities
+
+Current helpers:
+
+```
+parseNumber()
+```
+
+Converts values like:
+
+```
+761.228
+```
+
+into
+
+```
+761228
+```
+
+Additional helpers can be added under:
+
+```
+lib/utils
+```
+
+---
+
+# Coding Style
+
+Important project rules:
+
+* Keep functions small.
+* No duplicated parsing.
+* Reuse parser/card.ts whenever possible.
+* Services never parse HTML.
+* Parsers never perform HTTP requests.
+* Prefer readable code over clever code.
+* Fix architecture before adding features.
+* Avoid temporary hacks that require later refactoring.
+* Make changes cleanly the first time.
+
+---
+
+# Current Status
+
+Completed:
+
+* Provider architecture
+* HTTP client
+* Shared card parser
+* Latest endpoint
+* Search endpoint
+* Base types
+* Response types
+* Utility functions
+
+Not started yet:
+
+* Anime Details
+* Episode List
+* Episode Details
+* Streaming Sources
+
+When continuing this project, focus on maintaining the current architecture instead of restructuring it again unless absolutely necessary.
