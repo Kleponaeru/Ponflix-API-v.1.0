@@ -15,3 +15,15 @@ export interface LatestAnime {
 
   hot: boolean;
 }
+
+export interface SearchAnimeItem {
+  title: string;
+  url: string;
+}
+
+export interface AnimeDetails {
+  slug: string;
+  title: string;
+  url: string;
+  episodes: number[];
+}

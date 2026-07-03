@@ -1,11 +1,24 @@
 import { getLatestAnime } from "@/lib/kuramanime/latest";
 
 export async function GET() {
-  const anime = await getLatestAnime();
+  try {
+    const data = await getLatestAnime();
 
-  return Response.json({
-    success: true,
-    total: anime.length,
-    data: anime,
-  });
+    return Response.json({
+      success: true,
+      total: data.length,
+      data,
+    });
+  } catch (error) {
+    return Response.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
 }

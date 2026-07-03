@@ -1,3 +1,5 @@
+import type { SearchAnimeItem } from "@/types/anime";
+import type { ApiResponse } from "@/types/response";
 import { searchAnime } from "@/lib/kuramanime/search";
 
 export async function GET(request: Request) {
@@ -6,9 +8,11 @@ export async function GET(request: Request) {
 
   const results = await searchAnime(query);
 
-  return Response.json({
+  const payload: ApiResponse<SearchAnimeItem[]> & { query: string } = {
+    success: true,
+    data: results,
     query,
-    items: results,
-  });
-}
+  };
 
+  return Response.json(payload);
+}

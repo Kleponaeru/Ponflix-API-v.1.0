@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
-import { LatestAnime } from "@/types/anime";
+import type { LatestAnime } from "@/types/anime";
+import { parseAnimeUrl } from "@/lib/utils/url";
 
 export function parseLatest(html: string): LatestAnime[] {
   const $ = cheerio.load(html);
@@ -10,37 +11,40 @@ export function parseLatest(html: string): LatestAnime[] {
     const item = $(element);
 
     const anchor = item.find("> a");
-
     const url = anchor.attr("href") ?? "";
-    const path = url ? new URL(url).pathname : "";
 
-    const match = url.match(/anime\/(\d+)\/([^/]+)\/episode\/(\d+)/i);
-
-    const animeId = match ? Number(match[1]) : 0;
-    const slug = match ? match[2] : "";
-    const episodeNumber = match ? Number(match[3]) : 0;
+    const {
+      animeId,
+      slug,
+      episode: episodeNumber,
+      path,
+    } = parseAnimeUrl(url);
 
     const episodeText = item.find(".ep span").text().trim();
 
-    const episodeMatch = episodeText.match(/Ep\s+(\d+)\s*\/\s*(\d+|\?)/i);
+    const episodeMatch = episodeText.match(
+      /Ep\s+(\d+)\s*\/\s*(\d+|\?)/
+    );
 
     const currentEpisode = episodeMatch
       ? Number(episodeMatch[1])
       : episodeNumber;
 
     const totalEpisodes =
-      episodeMatch && episodeMatch[2] !== "?" ? Number(episodeMatch[2]) : null;
+      episodeMatch && episodeMatch[2] !== "?"
+        ? Number(episodeMatch[2])
+        : null;
 
     animeList.push({
       animeId,
       slug,
-
       title: item.find("h5 a").text().trim(),
 
       path,
       url,
 
-      thumbnail: item.find(".product__item__pic").attr("data-setbg") ?? "",
+      thumbnail:
+        item.find(".product__item__pic").attr("data-setbg") ?? "",
 
       currentEpisode,
       totalEpisodes,

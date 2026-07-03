@@ -1,9 +1,8 @@
-import { BASE_URL } from "@/constants";
-import { fetchHTML } from "../request";
-import { parseLatest } from "./parser";
+import { kuramanimeClient } from "./client";
+import { parseLatest } from "./parser/latest";
 
 export async function getLatestAnime() {
-  const html = await fetchHTML(BASE_URL);
+  const html = await kuramanimeClient.get("/");
 
   return parseLatest(html);
 }

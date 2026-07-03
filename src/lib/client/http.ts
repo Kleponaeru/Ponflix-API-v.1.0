@@ -18,22 +18,42 @@ export async function requestJson<T>(
   return (await response.json()) as T;
 }
 
-export async function fetchHTML(url: string): Promise<string> {
+export async function requestText(
+  input: string | URL | Request,
+  init?: RequestInit,
+): Promise<string> {
+  const response = await fetch(input, init);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  return response.text();
+}
+
+export interface HttpOptions {
+  headers?: HeadersInit;
+}
+
+export async function getHTML(
+  url: string,
+  options?: HttpOptions
+): Promise<string> {
   const response = await fetch(url, {
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
+      ...(options?.headers ?? {}),
     },
     cache: "no-store",
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch: ${response.status}`);
+    throw new Error(
+      `HTTP ${response.status} ${response.statusText}`
+    );
   }
 
-  return response.text();
+  return await response.text();
 }
 
