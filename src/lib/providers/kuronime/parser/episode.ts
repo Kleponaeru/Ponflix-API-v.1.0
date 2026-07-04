@@ -1,46 +1,42 @@
-import type { EpisodePlayer, EpisodeServer } from "@/types/episode";
 import * as cheerio from "cheerio";
+import type { EpisodePlayer } from "@/types/episode";
 
-export function parseEpisode(html: string): EpisodePlayer {
+export function parseEpisode(html: string): EpisodePlayer | null {
   const $ = cheerio.load(html);
 
   const title =
     $("h1").first().text().trim() ||
-    $(".entry-title").text().trim();
+    $(".entry-title").text().trim() ||
+    "";
 
   const iframe =
-    $("#iframedc").attr("src") ??
     $("#iframedc").attr("data-src") ??
-    null;
+    $("#iframedc").attr("src") ??
+    "";
 
-  const servers: EpisodeServer[] = [];
+  const scripts = $("script")
+    .map((_, el) => $(el).html() ?? "")
+    .get()
+    .join("\n");
 
-  $("#mirrorList option").each((_, el) => {
-    const option = $(el);
+  const sourceMatch = scripts.match(
+    /var\s+_0xa100d42aa\s*=\s*"([^"]+)"/
+  );
 
-    const value = option.attr("value");
-    const name = option.text().trim();
+  const xenMatch = scripts.match(
+    /var\s+xenHash\s*=\s*"([^"]+)"/
+  );
 
-    if (!value || !name) return;
+  const sourceId = sourceMatch?.[1] ?? null;
+  const xenHash = xenMatch?.[1] ?? null;
 
-    const [rawQuality, provider] = value.split(",");
-
-    const quality =
-      rawQuality === "vip"
-        ? "VIP"
-        : rawQuality.replace(/^v/, "");
-
-    servers.push({
-      name,
-      value,
-      quality,
-      provider,
-    });
-  });
+  if (!sourceId) return null;
 
   return {
     title,
     iframe,
-    servers,
+    sourceId,
+    xenHash,
+    servers: [],
   };
 }

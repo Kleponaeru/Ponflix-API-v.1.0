@@ -11,11 +11,15 @@ export async function requestJson<T>(
 ): Promise<T> {
   const response = await fetch(input, init);
 
+  const text = await response.text();
+
+  console.log("RAW RESPONSE:", text.slice(0, 300));
+
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
 
-  return (await response.json()) as T;
+  return JSON.parse(text) as T;
 }
 
 export async function requestText(
@@ -37,23 +41,26 @@ export interface HttpOptions {
 
 export async function getHTML(
   url: string,
-  options?: HttpOptions
+  options?: HttpOptions,
 ): Promise<string> {
   const response = await fetch(url, {
     headers: {
       "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "Accept":
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Referer": "https://kuronime.sbs/",
+      "Cache-Control": "no-cache",
       ...(options?.headers ?? {}),
     },
     cache: "no-store",
   });
 
   if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText}`
-    );
+    throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
 
-  return await response.text();
+  return response.text();
 }
 

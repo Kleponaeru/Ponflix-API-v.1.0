@@ -278,24 +278,44 @@ Important project rules:
 
 ---
 
-# Current Status
+# CURRENT ISSUES (Kuronime Provider - Episode Streaming Focus)
 
-Completed:
+## 1. No Valid Streaming Server Extraction
+- decryptSource() does not produce usable server list data
+- servers array always empty (`[]`)
+- no playable video URLs are being returned
 
-* Provider architecture
-* HTTP client
-* Shared card parser
-* Latest endpoint
-* Search endpoint
-* Base types
-* Response types
-* Utility functions
+## 2. Encrypted Source Not Converted to Server Format
+- API returns encrypted fields (src / src_sd / mirror)
+- these are never successfully transformed into:
+  - embed servers
+  - download servers
+  - playable links
 
-Not started yet:
+## 3. Missing Server Schema Mapping
+- decrypted output (when it exists) is not consistently mapped to EpisodeServer[]
+- normalizeServers() receives invalid or empty structured input
 
-* Anime Details
-* Episode List
-* Episode Details
-* Streaming Sources
+## 4. No Verified Stream Endpoint Output
+- no confirmed final output like:
+  - iframe URL
+  - direct video URL
+  - provider embed link
+- episode response does not contain real playback sources
 
-When continuing this project, focus on maintaining the current architecture instead of restructuring it again unless absolutely necessary.
+## 5. Mirror / src_sd / src Not Utilized Properly
+- multiple potential sources exist:
+  - src
+  - src_sd
+  - mirror
+- but none are reliably decoded into server entries
+
+## 6. Fallback Server Logic Not Functional
+- Filelions fallback only works if decrypt succeeds
+- blog fallback exists but not tied to actual streaming flow
+- no guaranteed server output path
+
+## 7. Normalization Depends on Unreliable Input
+- normalizeServers() assumes structured decrypted object
+- current decrypted output is inconsistent or null
+- leads to empty server list every time

@@ -6,13 +6,17 @@ export interface Episode extends AnimeBase {
 
 export interface EpisodeServer {
   name: string;
+  value: string;
   quality: string;
   provider: string;
-  value: string;
+  url: string | null;
 }
 
 export interface EpisodePlayer {
-  title: string;
+  title: string | null;
   iframe: string | null;
+
+  sourceId: string;
+  xenHash: string | null;
   servers: EpisodeServer[];
 }
