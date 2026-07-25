@@ -109,6 +109,9 @@ export async function getEpisode(slug: string) {
       filelions: null,
       blog: null,
       raw: null,
+      sourceStatus: "blocked" as const,
+      sourceError: "Upstream source lookup failed on production",
+      playbackAvailable: false,
     };
   }
 
@@ -136,6 +139,8 @@ export async function getEpisode(slug: string) {
   );
 
   const servers = uniqueServers([...playbackServers, ...normalizedServers]);
+  const playbackAvailable = servers.length > 0;
+  const sourceStatus = playbackAvailable ? ("ok" as const) : ("degraded" as const);
 
   return {
     ...episode,
@@ -145,5 +150,8 @@ export async function getEpisode(slug: string) {
     filelions: mirrorData?.filelions ?? null,
     blog: apiResponse.blog ?? null,
     raw: apiResponse,
+    sourceStatus,
+    sourceError: playbackAvailable ? null : "No playable servers were resolved",
+    playbackAvailable,
   };
 }

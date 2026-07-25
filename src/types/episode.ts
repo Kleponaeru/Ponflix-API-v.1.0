@@ -26,4 +26,7 @@ export interface EpisodeDetails extends EpisodePlayer {
   filelions: string | null;
   blog: string | null;
   raw: unknown;
+  sourceStatus: "ok" | "degraded" | "blocked";
+  sourceError: string | null;
+  playbackAvailable: boolean;
 }
