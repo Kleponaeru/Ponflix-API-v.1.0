@@ -91,10 +91,16 @@ export async function getEpisode(slug: string) {
 
   const apiResponse = await fetchEpisodeSources(
     episode.sourceId,
-    episode.xenHash
+    episode.xenHash,
   );
 
   if (!apiResponse) {
+    console.warn("Episode source data unavailable", {
+      slug,
+      sourceId: episode.sourceId,
+      xenHash: episode.xenHash,
+    });
+
     return {
       ...episode,
       iframe: episode.iframe,
