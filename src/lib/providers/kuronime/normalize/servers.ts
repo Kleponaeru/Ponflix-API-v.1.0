@@ -1,18 +1,67 @@
 import type { EpisodeServer } from "@/types/episode";
 
-type DecryptedSource = {
-  embed?: Record<string, Record<string, string>>;
-  download?: Record<string, Record<string, string>>;
+export type DecryptedSource = {
+  embed?: ServerGroupMap | null;
+  download?: ServerGroupMap | null;
   filelions?: string | null;
   blog?: string | null;
+  sources?: ServerGroupMap | null;
+  streams?: ServerGroupMap | null;
 };
 
-type MirrorData = any;
+type ServerGroupMap = Record<
+  string,
+  Record<string, string | null | undefined> | string | null | undefined
+>;
+
+type MirrorData = Partial<DecryptedSource> | null;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function pushNestedServers(
+  servers: EpisodeServer[],
+  data: unknown,
+  prefix: string,
+) {
+  if (!isRecord(data)) return;
+
+  for (const [quality, providers] of Object.entries(data)) {
+    const qualityLabel = quality.toUpperCase();
+
+    if (isRecord(providers)) {
+      for (const [provider, url] of Object.entries(providers)) {
+        if (typeof url !== "string" || !url) continue;
+
+        servers.push({
+          name: `${prefix} - ${qualityLabel} - ${provider}`,
+          value: `${quality},${provider}`,
+          quality: qualityLabel,
+          provider,
+          url,
+        });
+      }
+
+      continue;
+    }
+
+    if (typeof providers === "string" && providers) {
+      servers.push({
+        name: `${prefix} - ${qualityLabel}`,
+        value: `${quality},default`,
+        quality: qualityLabel,
+        provider: "default",
+        url: providers,
+      });
+    }
+  }
+}
 
 export function normalizeServers(
   data: DecryptedSource,
   api: { blog?: string | null; filelions?: string | null },
-  mirror?: MirrorData | null
+  mirror?: MirrorData
 ): EpisodeServer[] {
   const servers: EpisodeServer[] = [];
 
@@ -36,52 +85,15 @@ export function normalizeServers(
 
   // 🔥 PRIORITY 1: MIRROR DATA (if exists)
   if (mirror) {
-    const mirrorEmbed = mirror.embed || mirror.sources || mirror.streams;
-
-    if (mirrorEmbed) {
-      for (const quality in mirrorEmbed) {
-        for (const provider in mirrorEmbed[quality]) {
-          safePush(
-            `MIRROR - ${quality.toUpperCase()} - ${provider}`,
-            `${quality},${provider}`,
-            quality.toUpperCase(),
-            provider,
-            mirrorEmbed[quality][provider]
-          );
-        }
-      }
-    }
+    const mirrorEmbed = mirror.embed ?? mirror.sources ?? mirror.streams;
+    pushNestedServers(servers, mirrorEmbed, "MIRROR");
   }
 
   // 🔥 PRIORITY 2: DECRYPTED EMBED
-  if (data.embed) {
-    for (const quality in data.embed) {
-      for (const provider in data.embed[quality]) {
-        safePush(
-          `${quality.toUpperCase()} - ${provider}`,
-          `${quality},${provider}`,
-          quality.toUpperCase(),
-          provider,
-          data.embed[quality][provider]
-        );
-      }
-    }
-  }
+  pushNestedServers(servers, data.embed, "EMBED");
 
   // 🔥 PRIORITY 3: DOWNLOAD
-  if (data.download) {
-    for (const quality in data.download) {
-      for (const provider in data.download[quality]) {
-        safePush(
-          `DOWNLOAD - ${provider}`,
-          `${quality},${provider}`,
-          quality.toUpperCase(),
-          provider,
-          data.download[quality][provider]
-        );
-      }
-    }
-  }
+  pushNestedServers(servers, data.download, "DOWNLOAD");
 
   // 🔥 PRIORITY 4: FILELIONS
   const filelionsUrl = data.filelions ?? api.filelions ?? null;

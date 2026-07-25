@@ -20,3 +20,10 @@ export interface EpisodePlayer {
   xenHash: string | null;
   servers: EpisodeServer[];
 }
+
+export interface EpisodeDetails extends EpisodePlayer {
+  download: Record<string, Record<string, string>> | null;
+  filelions: string | null;
+  blog: string | null;
+  raw: unknown;
+}
