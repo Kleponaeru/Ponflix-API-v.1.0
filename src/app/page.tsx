@@ -1,3 +1,5 @@
+import CopyButton from "./ui/copy-button";
+
 function toAnchorId(path: string) {
   return path.replaceAll("/", "-").replace(/\[|\]/g, "");
 }
@@ -44,7 +46,7 @@ const endpoints = [
         description: "Search query.",
       },
     ],
-    request: `curl "http://localhost:3000/api/search?q=solo...`,
+    request: `curl "http://localhost:3000/api/search?q=solo..."`,
     response: {
       success: true,
       query: "solo",
@@ -174,19 +176,24 @@ const endpoints = [
 function CodeBlock({
   label,
   code,
+  copyable = false,
 }: {
   label: string;
   code: string;
+  copyable?: boolean;
 }) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+    <section className="rounded-xl border border-white/10 bg-slate-950/80 p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
           {label}
         </h3>
-        <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-200">
-          JSON
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-200">
+            {label === "Request" ? "SHELL" : "JSON"}
+          </span>
+          {copyable ? <CopyButton text={code} /> : null}
+        </div>
       </div>
       <pre className="max-w-full whitespace-pre-wrap break-words text-[13px] leading-6 text-slate-200">
         <code className="block max-w-full whitespace-pre-wrap break-words">
@@ -207,7 +214,7 @@ function EndpointCard({
   return (
     <details
       id={toAnchorId(endpoint.path)}
-      className="group scroll-mt-24 rounded-[1.5rem] border border-white/10 bg-white/[0.04] shadow-[0_16px_60px_rgba(2,6,23,0.18)] backdrop-blur-md"
+      className="group scroll-mt-24 rounded-2xl border border-white/10 bg-slate-900/70"
     >
       <summary className="cursor-pointer list-none px-4 py-4 sm:px-5">
         <div className="flex flex-col gap-3 border-b border-white/10 pb-4 group-open:border-white/10">
@@ -243,8 +250,8 @@ function EndpointCard({
       <div className="px-4 pb-4 sm:px-5 sm:pb-5">
         <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1.05fr]">
           <div className="space-y-4">
-            <CodeBlock label="Request" code={endpoint.request} />
-            <section className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+            <CodeBlock label="Request" code={endpoint.request} copyable />
+            <section className="rounded-xl border border-white/10 bg-slate-950/80 p-4">
               <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Path params
               </h3>
@@ -287,13 +294,10 @@ function EndpointCard({
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(99,102,241,0.18),_transparent_28%),linear-gradient(180deg,_#050816_0%,_#091120_42%,_#04070d_100%)] text-slate-100">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
-      <div className="absolute left-0 top-0 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
-      <div className="absolute right-0 top-36 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
+    <main className="min-h-screen bg-slate-950 text-slate-100">
 
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-        <header className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_100px_rgba(2,6,23,0.35)] backdrop-blur-xl sm:p-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+        <header className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-lg sm:p-8">
           <p className="text-sm font-medium uppercase tracking-[0.3em] text-cyan-200/80">
             API Reference
           </p>
@@ -308,7 +312,7 @@ export default function Home() {
         <section className="space-y-4">
           <details
             open
-            className="rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-[0_24px_90px_rgba(2,6,23,0.25)] backdrop-blur-xl"
+            className="rounded-2xl border border-white/10 bg-slate-900/70 shadow-lg"
           >
             <summary className="cursor-pointer list-none px-6 py-5">
               <div className="flex items-center justify-between gap-4">
