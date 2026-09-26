@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getEpisodes } from "@/lib/providers/kuronime/episodes";
+import { getEpisodes } from "@/lib/providers/aniwatch/episodes";
 
 export async function GET(
   _: Request,

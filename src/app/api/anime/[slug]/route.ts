@@ -1,7 +1,7 @@
 import type { AnimeDetails } from "@/types/details";
 import type { ApiResponse } from "@/types/response";
 
-import { getAnime } from "@/lib/providers/kuronime/anime";
+import { getAnime } from "@/lib/providers/aniwatch/anime";
 
 export async function GET(
   _request: Request,

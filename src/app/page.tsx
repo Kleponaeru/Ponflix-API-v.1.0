@@ -4,7 +4,7 @@ function toAnchorId(path: string) {
   return path.replaceAll("/", "-").replace(/\[|\]/g, "");
 }
 
-const endpoints = [
+const kuronimeEndpoints = [
   {
     method: "GET",
     path: "/api/latest",
@@ -173,6 +173,182 @@ const endpoints = [
   },
 ] as const;
 
+type Endpoint = {
+  method: string;
+  path: string;
+  title: string;
+  summary: string;
+  params: readonly {
+    name: string;
+    type: string;
+    required: boolean;
+    description: string;
+  }[];
+  request: string;
+  response: unknown;
+};
+
+const aniwatchEndpoints = [
+  {
+    method: "GET",
+    path: "/api/latest",
+    title: "Latest AniWatch spotlight",
+    summary: "Spotlight anime cards scraped from AniWatch.",
+    params: [],
+    request: `curl http://localhost:3000/api/latest`,
+    response: {
+      success: true,
+      total: 6,
+      data: [
+        {
+          slug: "fire-force-season-3-part-2",
+          title: "Fire Force Season 3 Part 2",
+          path: "/anime/fire-force-season-3-part-2/",
+          url: "https://aniwatchtv.ro/anime/fire-force-season-3-part-2/",
+          thumbnail: "https://i0.wp.com/aniwatchtv.ro/wp-content/uploads/2026/08/Fire-Force-Season-3.webp",
+          currentEpisode: 13,
+          totalEpisodes: null,
+          type: "TV",
+          quality: "HD",
+          hot: false,
+          views: null,
+          timeAgo: null,
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/search?q=naruto",
+    title: "Search AniWatch",
+    summary: "Search AniWatch anime by title or keyword.",
+    params: [
+      {
+        name: "q",
+        type: "string",
+        required: true,
+        description: "Search query.",
+      },
+    ],
+    request: `curl "http://localhost:3000/api/search?q=naruto"`,
+    response: {
+      success: true,
+      query: "naruto",
+      total: 24,
+      data: [
+        {
+          slug: "boruto-naruto-next-generations",
+          title: "Boruto: Naruto Next Generations",
+          path: "/anime/boruto-naruto-next-generations/",
+          url: "https://aniwatchtv.ro/anime/boruto-naruto-next-generations/",
+          thumbnail: "https://i0.wp.com/aniwatchtv.ro/wp-content/uploads/2026/08/Boruto-Naruto-Next-Generations-212x300.jpg",
+          type: "TV",
+          score: null,
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/anime/[slug]",
+    title: "AniWatch anime details",
+    summary: "Metadata for an AniWatch anime page.",
+    params: [
+      {
+        name: "slug",
+        type: "string",
+        required: true,
+        description: "AniWatch anime slug, such as boruto-naruto-next-generations.",
+      },
+    ],
+    request: `curl http://localhost:3000/api/anime/boruto-naruto-next-generations`,
+    response: {
+      success: true,
+      slug: "boruto-naruto-next-generations",
+      data: {
+        slug: "boruto-naruto-next-generations",
+        title: "Boruto: Naruto Next Generations",
+        path: "/anime/boruto-naruto-next-generations/",
+        url: "https://aniwatchtv.ro/anime/boruto-naruto-next-generations/",
+        japaneseTitle: "Boruto: Naruto Next Generations",
+        synopsis: "Following the successful end of the Fourth Shinobi World War...",
+        score: 6.6,
+        status: "Finished Airing",
+        aired: "Apr 5, 2017 to Mar 26, 2023",
+        type: "TV",
+        duration: "23m min",
+        totalEpisodes: 293,
+        genres: ["Action", "Adventure", "Martial Arts", "Shounen", "Super Power"],
+        views: null,
+        updatedAt: "2026-09-25T02:42:38+00:00",
+      },
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/anime/[slug]/episodes",
+    title: "AniWatch episode list",
+    summary: "Episode links loaded from AniWatch.",
+    params: [
+      {
+        name: "slug",
+        type: "string",
+        required: true,
+        description: "AniWatch anime slug.",
+      },
+    ],
+    request: `curl http://localhost:3000/api/anime/boruto-naruto-next-generations/episodes`,
+    response: {
+      success: true,
+      data: [
+        {
+          title: "Episode 1",
+          slug: "boruto-naruto-next-generations-episode-1",
+          path: "/boruto-naruto-next-generations-episode-1/",
+          url: "https://aniwatchtv.ro/boruto-naruto-next-generations-episode-1/",
+          number: 1,
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/episode/[id]",
+    title: "AniWatch episode playback",
+    summary: "Iframe and decoded playback servers for an AniWatch episode.",
+    params: [
+      {
+        name: "id",
+        type: "string",
+        required: true,
+        description: "Episode slug, such as boruto-naruto-next-generations-episode-293.",
+      },
+    ],
+    request: `curl http://localhost:3000/api/episode/boruto-naruto-next-generations-episode-293`,
+    response: {
+      success: true,
+      id: "boruto-naruto-next-generations-episode-293",
+      data: {
+        title: "Boruto: Naruto Next Generations Episode 293",
+        iframe: "https://zokoanime.video/stream/mal/34566/293/sub",
+        sourceId: "13677",
+        xenHash: null,
+        servers: [
+          {
+            name: "Fast Player",
+            value: "sub,fast-player",
+            quality: "Fast Player",
+            provider: "fast-player",
+            url: "https://zokoanime.video/stream/mal/34566/293/sub",
+          },
+        ],
+        sourceStatus: "ok",
+        playbackAvailable: true,
+      },
+    },
+  },
+] satisfies readonly Endpoint[];
+
 function CodeBlock({
   label,
   code,
@@ -182,6 +358,10 @@ function CodeBlock({
   code: string;
   copyable?: boolean;
 }) {
+  const copyText = code
+    .replace(/^curl\s+/, "")
+    .replace(/^"(.*)"$/, "$1");
+
   return (
     <section className="rounded-xl border border-white/10 bg-slate-950/80 p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -192,7 +372,7 @@ function CodeBlock({
           <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-200">
             {label === "Request" ? "SHELL" : "JSON"}
           </span>
-          {copyable ? <CopyButton text={code} /> : null}
+          {copyable ? <CopyButton text={copyText} /> : null}
         </div>
       </div>
       <pre className="max-w-full whitespace-pre-wrap break-words text-[13px] leading-6 text-slate-200">
@@ -206,14 +386,16 @@ function CodeBlock({
 
 function EndpointCard({
   endpoint,
+  provider,
 }: {
-  endpoint: (typeof endpoints)[number];
+  endpoint: Endpoint;
+  provider: string;
 }) {
-  const response = JSON.stringify(endpoint.response, null, 2);
+  const response = JSON.stringify(endpoint.response, null, 2) ?? "";
 
   return (
     <details
-      id={toAnchorId(endpoint.path)}
+      id={toAnchorId(`${provider}-${endpoint.path}`)}
       className="group scroll-mt-24 rounded-2xl border border-white/10 bg-slate-900/70"
     >
       <summary className="cursor-pointer list-none px-4 py-4 sm:px-5">
@@ -292,6 +474,53 @@ function EndpointCard({
   );
 }
 
+function EndpointCollection({
+  label,
+  name,
+  provider,
+  endpoints,
+  open = false,
+}: {
+  label: string;
+  name: string;
+  provider: string;
+  endpoints: readonly Endpoint[];
+  open?: boolean;
+}) {
+  return (
+    <details
+      open={open}
+      className="rounded-2xl border border-white/10 bg-slate-900/70 shadow-lg"
+    >
+      <summary className="cursor-pointer list-none px-6 py-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/80">
+              {label}
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-white">{name}</h2>
+          </div>
+          <span className="rounded-full border border-white/10 bg-slate-950/60 px-3 py-1 text-xs font-medium text-slate-300">
+            {endpoints.length} routes
+          </span>
+        </div>
+      </summary>
+
+      <div className="border-t border-white/10 p-4 sm:p-5">
+        <div className="grid gap-4">
+          {endpoints.map((endpoint) => (
+            <EndpointCard
+              key={`${provider}-${endpoint.path}`}
+              endpoint={endpoint}
+              provider={provider}
+            />
+          ))}
+        </div>
+      </div>
+    </details>
+  );
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -310,34 +539,19 @@ export default function Home() {
         </header>
 
         <section className="space-y-4">
-          <details
+          <EndpointCollection
+            label="Primary provider"
+            name="AniWatch"
+            provider="aniwatch"
+            endpoints={aniwatchEndpoints}
             open
-            className="rounded-2xl border border-white/10 bg-slate-900/70 shadow-lg"
-          >
-            <summary className="cursor-pointer list-none px-6 py-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/80">
-                    Collection
-                  </p>
-                  <h2 className="mt-1 text-xl font-semibold text-white">
-                    Kuronime
-                  </h2>
-                </div>
-                <span className="rounded-full border border-white/10 bg-slate-950/60 px-3 py-1 text-xs font-medium text-slate-300">
-                  {endpoints.length} routes
-                </span>
-              </div>
-            </summary>
-
-            <div className="border-t border-white/10 p-4 sm:p-5">
-              <div className="grid gap-4">
-                {endpoints.map((endpoint) => (
-                  <EndpointCard key={endpoint.path} endpoint={endpoint} />
-                ))}
-              </div>
-            </div>
-          </details>
+          />
+          <EndpointCollection
+            label="Legacy provider"
+            name="Kuronime"
+            provider="kuronime"
+            endpoints={kuronimeEndpoints}
+          />
         </section>
       </div>
     </main>
