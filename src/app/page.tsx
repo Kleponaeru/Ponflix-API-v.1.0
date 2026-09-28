@@ -360,7 +360,8 @@ function CodeBlock({
 }) {
   const copyText = code
     .replace(/^curl\s+/, "")
-    .replace(/^"(.*)"$/, "$1");
+    .replace(/^"(.*)"$/, "$1")
+    .replace(/^https?:\/\/[^/]+/, "");
 
   return (
     <section className="rounded-xl border border-white/10 bg-slate-950/80 p-4">

@@ -29,6 +29,17 @@ function getNumericInfoValue($: cheerio.CheerioAPI, label: string) {
   return value ? Number(value.match(/[\d.]+/)?.[0] ?? NaN) || null : null;
 }
 
+export function parseAnimeId(html: string) {
+  const $ = cheerio.load(html);
+  const detail = $("#ani_detail").first();
+
+  return (
+    detail.attr("data-anime-id") ??
+    detail.find("[data-animeid]").first().attr("data-animeid") ??
+    null
+  );
+}
+
 export function parseAnime(html: string): AnimeDetails | null {
   const $ = cheerio.load(html);
   const detail = $("#ani_detail").first();
