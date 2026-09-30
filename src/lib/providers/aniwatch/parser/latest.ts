@@ -9,7 +9,7 @@ import {
   slugFromPath,
 } from "./utils";
 
-export function parseLatest(html: string): LatestAnime[] {
+export function parseSpotlight(html: string): LatestAnime[] {
   const $ = cheerio.load(html);
   const animeList: LatestAnime[] = [];
   const seen = new Set<string>();
@@ -56,3 +56,5 @@ export function parseLatest(html: string): LatestAnime[] {
 
   return animeList;
 }
+
+export const parseLatest = parseSpotlight;

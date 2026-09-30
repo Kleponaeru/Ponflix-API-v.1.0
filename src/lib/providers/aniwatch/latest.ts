@@ -1,8 +1,8 @@
 import { aniwatchClient } from "./client";
-import { parseLatest } from "./parser/latest";
+import { parseLatestCompleted } from "./parser/latest-completed";
 
 export async function getLatestAnime() {
-  const html = await aniwatchClient.get("/");
+  const html = await aniwatchClient.get("/latest-completed/");
 
-  return parseLatest(html);
+  return parseLatestCompleted(html);
 }
