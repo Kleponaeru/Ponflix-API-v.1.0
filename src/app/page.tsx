@@ -237,6 +237,155 @@ const aniwatchEndpoints = [
   },
 ] satisfies readonly Endpoint[];
 
+const lk21Endpoints = [
+  {
+    method: "GET",
+    path: "/api/lk21/latest",
+    title: "LK21 latest films",
+    summary: "Latest films from LK21's full movie list.",
+    params: [],
+    request: `curl http://localhost:3000/api/lk21/latest`,
+    response: {
+      success: true,
+      total: 1,
+      data: [
+        {
+          type: "movie",
+          slug: "dear-you-2026",
+          title: "Dear You",
+          year: 2026,
+          rating: 8.2,
+          quality: "HD",
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/lk21/latest-movies",
+    title: "LK21 latest movies",
+    summary: "Latest movies widget from the LK21 home page.",
+    params: [],
+    request: `curl http://localhost:3000/api/lk21/latest-movies`,
+    response: {
+      success: true,
+      total: 1,
+      data: [
+        {
+          type: "movie",
+          slug: "love-hypothesis-2026",
+          title: "The Love Hypothesis",
+          year: 2026,
+          rating: 6.9,
+          quality: "HD",
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/lk21/top-series",
+    title: "LK21 top series",
+    summary: "Featured TV series from the LK21 home page.",
+    params: [],
+    request: `curl http://localhost:3000/api/lk21/top-series`,
+    response: {
+      success: true,
+      total: 1,
+      data: [
+        {
+          type: "series",
+          slug: "flexxcop-2024",
+          title: "FlexxCop",
+          year: 2024,
+          rating: 8,
+          episode: 14,
+          season: 2,
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/lk21/search?q=spiderman&page=1",
+    title: "Search LK21",
+    summary: "Search LK21 movies and series with pagination.",
+    params: [
+      {
+        name: "q",
+        type: "string",
+        required: true,
+        description: "Movie or series title to search for.",
+      },
+      {
+        name: "page",
+        type: "number",
+        required: false,
+        description: "Search result page, starting at 1.",
+      },
+    ],
+    request: `curl "http://localhost:3000/api/lk21/search?q=spiderman&page=1"`,
+    response: {
+      success: true,
+      query: "spiderman",
+      page: 1,
+      totalPages: 1,
+      total: 1,
+      data: [
+        {
+          type: "movie",
+          slug: "spider-man-brand-new-day-2026",
+          title: "Spider-Man: Brand New Day (2026)",
+          year: 2026,
+          rating: 7.9,
+          quality: "CAM",
+          runtime: "02:25",
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/lk21/[type]/[slug]",
+    title: "LK21 title details",
+    summary: "Movie or series metadata and available embedded player servers.",
+    params: [
+      {
+        name: "type",
+        type: "string",
+        required: true,
+        description: "Either movie or series.",
+      },
+      {
+        name: "slug",
+        type: "string",
+        required: true,
+        description: "The LK21 slug returned by a feed or search result.",
+      },
+    ],
+    request: `curl http://localhost:3000/api/lk21/movie/spider-man-brand-new-day-2026`,
+    response: {
+      success: true,
+      data: {
+        type: "movie",
+        slug: "spider-man-brand-new-day-2026",
+        title: "Spider-Man: Brand New Day",
+        year: 2026,
+        rating: 7.9,
+        runtime: "02:25",
+        servers: [
+          {
+            name: "P2P",
+            url: "https://videonode.de/iframe3/p2p/example",
+            selected: true,
+          },
+        ],
+        embedUrl: "https://videonode.de/iframe3/p2p/example?v=1",
+      },
+    },
+  },
+] satisfies readonly Endpoint[];
+
 function CodeBlock({
   label,
   code,
@@ -434,6 +583,12 @@ export default function Home() {
             provider="aniwatch"
             endpoints={aniwatchEndpoints}
             open
+          />
+          <EndpointCollection
+            label="Movies and series"
+            name="LK21"
+            provider="lk21"
+            endpoints={lk21Endpoints}
           />
         </section>
       </div>
