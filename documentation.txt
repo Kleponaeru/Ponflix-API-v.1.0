@@ -23,17 +23,6 @@ The AniWatch scraper lives in `src/lib/providers/aniwatch/`:
 
 The home page at `/` contains the request and response examples for these routes. Examples are copied as API paths so they work with any host.
 
-## LK21 routes
-
-- `GET /api/lk21/latest` — latest films from the full movie list.
-- `GET /api/lk21/latest-movies` — latest movies widget from the home page.
-- `GET /api/lk21/top-series` — featured series widget from the home page.
-- `GET /api/lk21/search?q=<query>&page=<page>` — search movies and series.
-
-- `GET /api/lk21/<type>/<slug>` - movie or series details and embedded player options; `<type>` is `movie` or `series`.
-
-LK21 routes and types are kept separate from AniWatch. The detail route returns the source's public embed URLs; it does not extract or proxy the underlying video stream.
-
 ## TMDB routes
 
 - `GET /api/tmdb/search?query=<query>&page=<page>&language=<language>` — search TMDB movies.
