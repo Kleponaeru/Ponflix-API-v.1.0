@@ -34,6 +34,21 @@ The home page at `/` contains the request and response examples for these routes
 
 LK21 routes and types are kept separate from AniWatch. The detail route returns the source's public embed URLs; it does not extract or proxy the underlying video stream.
 
+## TMDB routes
+
+- `GET /api/tmdb/search?query=<query>&page=<page>&language=<language>` — search TMDB movies.
+- `GET /api/tmdb/movie/<id>?append_to_response=videos,images` — TMDB movie details, with optional appended subrequests.
+- `GET /api/tmdb/v3/discover/movie?...` — filtered movie discovery; TMDB's supported filters are passed through.
+- `GET /api/tmdb/v3/trending/movie/<day|week>` and `/api/tmdb/v3/movie/<popular|now_playing|upcoming|top_rated>` — browse movie feeds.
+- `GET /api/tmdb/v3/genre/movie/list` — movie genres.
+- `GET /api/tmdb/v3/movie/<id>/<resource>` — public movie resources such as `credits`, `videos`, `images`, `recommendations`, `similar`, `release_dates`, `external_ids`, and `watch/providers`.
+- `GET /api/tmdb/v3/watch/providers/movie` — list movie streaming providers.
+- `GET /api/tmdb/v3/configuration` — TMDB image configuration.
+
+The read-only `/api/tmdb/v3/` proxy also supports TMDB movie/person search, collections, IMDb-ID lookup, and people details with movie credits. It forwards public query parameters and keeps TMDB credentials server-side. Watch-provider availability is powered by JustWatch and requires JustWatch attribution in the app.
+
+Set `TMDB_READ_ACCESS_TOKEN` (recommended) or `TMDB_API_KEY` in the server environment. Movie detail requests forward `append_to_response`, `language`, and `include_image_language` to TMDB.
+
 ## Development
 
 ```bash

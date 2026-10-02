@@ -386,6 +386,185 @@ const lk21Endpoints = [
   },
 ] satisfies readonly Endpoint[];
 
+const tmdbEndpoints = [
+  {
+    method: "GET",
+    path: "/api/tmdb/search?query=spider-man&page=1&language=en-US",
+    title: "Search TMDB movies",
+    summary: "Search TMDB's movie catalog and return paginated results.",
+    params: [
+      {
+        name: "query",
+        type: "string",
+        required: true,
+        description: "Movie title or keyword to search for.",
+      },
+      {
+        name: "page",
+        type: "number",
+        required: false,
+        description: "Result page, starting at 1.",
+      },
+      {
+        name: "language",
+        type: "string",
+        required: false,
+        description: "TMDB language tag, such as en-US or id-ID.",
+      },
+    ],
+    request: `curl "http://localhost:3000/api/tmdb/search?query=spider-man&page=1&language=en-US"`,
+    response: {
+      success: true,
+      query: "spider-man",
+      page: 1,
+      totalPages: 42,
+      total: 821,
+      data: [
+        {
+          id: 557,
+          title: "Spider-Man",
+          original_title: "Spider-Man",
+          release_date: "2002-05-01",
+          poster_path: "/...jpg",
+          vote_average: 7.3,
+        },
+      ],
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/tmdb/movie/[id]?append_to_response=videos,images",
+    title: "TMDB movie details",
+    summary: "Fetch a movie and optionally append related TMDB subrequests in one call.",
+    params: [
+      {
+        name: "id",
+        type: "number",
+        required: true,
+        description: "TMDB movie ID, such as 557.",
+      },
+      {
+        name: "append_to_response",
+        type: "string",
+        required: false,
+        description: "Comma-separated movie subresources, such as videos,images.",
+      },
+      {
+        name: "language",
+        type: "string",
+        required: false,
+        description: "TMDB language tag for the movie and appended resources.",
+      },
+      {
+        name: "include_image_language",
+        type: "string",
+        required: false,
+        description: "Language filter for appended images, such as en,null.",
+      },
+    ],
+    request: `curl "http://localhost:3000/api/tmdb/movie/557?append_to_response=videos,images&include_image_language=en,null"`,
+    response: {
+      success: true,
+      data: {
+        id: 557,
+        title: "Spider-Man",
+        overview: "After being bitten by a genetically altered spider...",
+        release_date: "2002-05-01",
+        videos: { results: [{ key: "...", site: "YouTube", type: "Trailer" }] },
+        images: { backdrops: [], posters: [] },
+      },
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/tmdb/v3/discover/movie?with_genres=28&sort_by=popularity.desc&page=1",
+    title: "Discover TMDB movies",
+    summary: "Browse and filter TMDB movies. TMDB discovery filters are passed through.",
+    params: [
+      {
+        name: "with_genres",
+        type: "string",
+        required: false,
+        description: "Genre IDs to include, such as 28 for Action.",
+      },
+      {
+        name: "sort_by",
+        type: "string",
+        required: false,
+        description: "TMDB sort order, such as popularity.desc or vote_average.desc.",
+      },
+      {
+        name: "page",
+        type: "number",
+        required: false,
+        description: "Result page, starting at 1.",
+      },
+    ],
+    request: `curl "http://localhost:3000/api/tmdb/v3/discover/movie?with_genres=28&sort_by=popularity.desc&page=1"`,
+    response: {
+      page: 1,
+      results: [
+        {
+          id: 550,
+          title: "Example Movie",
+          genre_ids: [28],
+          release_date: "2025-01-01",
+          poster_path: "/example.jpg",
+          vote_average: 7.5,
+        },
+      ],
+      total_pages: 20,
+      total_results: 400,
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/tmdb/v3/trending/movie/week",
+    title: "TMDB trending movies",
+    summary: "Get movies trending today or this week.",
+    params: [],
+    request: `curl http://localhost:3000/api/tmdb/v3/trending/movie/week`,
+    response: {
+      page: 1,
+      results: [
+        {
+          id: 550,
+          title: "Example Movie",
+          media_type: "movie",
+          release_date: "2025-01-01",
+          poster_path: "/example.jpg",
+        },
+      ],
+      total_pages: 10,
+      total_results: 200,
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/tmdb/v3/movie/[id]/watch/providers",
+    title: "Movie streaming availability",
+    summary: "List where TMDB reports a movie is available to stream, rent, or buy.",
+    params: [
+      {
+        name: "id",
+        type: "number",
+        required: true,
+        description: "TMDB movie ID.",
+      },
+    ],
+    request: `curl http://localhost:3000/api/tmdb/v3/movie/550/watch/providers`,
+    response: {
+      id: 550,
+      results: {
+        US: {
+          link: "https://www.themoviedb.org/movie/550/watch",
+          flatrate: [{ provider_name: "Example Streaming Service" }],
+        },
+      },
+    },
+  },
+] satisfies readonly Endpoint[];
+
 function CodeBlock({
   label,
   code,
@@ -589,6 +768,12 @@ export default function Home() {
             name="LK21"
             provider="lk21"
             endpoints={lk21Endpoints}
+          />
+          <EndpointCollection
+            label="Movie metadata"
+            name="TMDB"
+            provider="tmdb"
+            endpoints={tmdbEndpoints}
           />
         </section>
       </div>
