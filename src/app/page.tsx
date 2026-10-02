@@ -4,175 +4,6 @@ function toAnchorId(path: string) {
   return path.replaceAll("/", "-").replace(/\[|\]/g, "");
 }
 
-const kuronimeEndpoints = [
-  {
-    method: "GET",
-    path: "/api/latest",
-    title: "Latest anime",
-    summary: "Latest anime cards from the provider.",
-    params: [],
-    request: `curl http://localhost:3000/api/latest`,
-    response: {
-      success: true,
-      total: 2,
-      data: [
-        {
-          slug: "solo-leveling-season-2",
-          title: "Solo Leveling Season 2",
-          path: "/anime/solo-leveling-season-2/",
-          url: "https://kuronime.sbs/anime/solo-leveling-season-2/",
-          thumbnail: "https://example.com/thumb.jpg",
-          currentEpisode: 11,
-          totalEpisodes: null,
-          type: null,
-          quality: null,
-          hot: false,
-          views: 123456,
-          timeAgo: "2 hours ago",
-        },
-      ],
-    },
-  },
-  {
-    method: "GET",
-    path: "/api/search?q=solo...",
-    title: "Search anime",
-    summary: "Search anime by title or keyword.",
-    params: [
-      {
-        name: "q",
-        type: "string",
-        required: true,
-        description: "Search query.",
-      },
-    ],
-    request: `curl "http://localhost:3000/api/search?q=solo..."`,
-    response: {
-      success: true,
-      query: "solo",
-      total: 1,
-      data: [
-        {
-          slug: "solo-leveling-season-2",
-          title: "Solo Leveling Season 2",
-          path: "/anime/solo-leveling-season-2/",
-          url: "https://kuronime.sbs/anime/solo-leveling-season-2/",
-          thumbnail: "https://example.com/thumb.jpg",
-          type: "TV",
-          score: 8.7,
-        },
-      ],
-    },
-  },
-  {
-    method: "GET",
-    path: "/api/anime/[slug]",
-    title: "Anime details",
-    summary: "Metadata for a single anime page.",
-    params: [
-      {
-        name: "slug",
-        type: "string",
-        required: true,
-        description: "Anime slug.",
-      },
-    ],
-    request: `curl http://localhost:3000/api/anime/solo-leveling-season-2`,
-    response: {
-      success: true,
-      slug: "solo-leveling-season-2",
-      data: {
-        slug: "solo-leveling-season-2",
-        title: "Solo Leveling Season 2",
-        path: "/anime/solo-leveling-season-2/",
-        url: "https://kuronime.sbs/anime/solo-leveling-season-2/",
-        thumbnail: "https://example.com/thumb.jpg",
-        japaneseTitle: "Ore dake Level Up na Ken Season 2",
-        synopsis: "Action fantasy anime summary.",
-        score: 8.9,
-        status: "Ongoing",
-        aired: "2026",
-        type: "TV",
-        duration: "24 min",
-        totalEpisodes: 12,
-        genres: ["Action", "Fantasy"],
-        views: 999999,
-        updatedAt: "Updated 2 days ago",
-      },
-    },
-  },
-  {
-    method: "GET",
-    path: "/api/anime/[slug]/episodes",
-    title: "Episode list",
-    summary: "Episode links for a given anime.",
-    params: [
-      {
-        name: "slug",
-        type: "string",
-        required: true,
-        description: "Anime slug.",
-      },
-    ],
-    request: `curl http://localhost:3000/api/anime/solo-leveling-season-2/episodes`,
-    response: {
-      success: true,
-      data: [
-        {
-          title: "Episode 11",
-          slug: "nonton-solo-leveling-episode-11",
-          url: "https://kuronime.sbs/nonton-solo-leveling-episode-11/",
-          path: "/nonton-solo-leveling-episode-11/",
-        },
-      ],
-    },
-  },
-  {
-    method: "GET",
-    path: "/api/episode/[id]",
-    title: "Episode playback",
-    summary: "Playable stream URLs and episode player metadata.",
-    params: [
-      {
-        name: "id",
-        type: "string",
-        required: true,
-        description: "Episode slug.",
-      },
-    ],
-    request: `curl http://localhost:3000/api/episode/nonton-solo-leveling-episode-11`,
-    response: {
-      success: true,
-      id: "nonton-solo-leveling-episode-11",
-      data: {
-        title: "Nonton Solo Leveling Episode 11 Subtitle Indonesia",
-        iframe: "https://player.animeku.org/?data=...",
-        sourceId: "dXl1RHBYeXlpcW1GWEMzb29Fb3ZCSWZsUU...",
-        xenHash: "awar",
-        servers: [
-          {
-            name: "BLOG PLAYER",
-            value: "blog,default",
-            quality: "BLOG",
-            provider: "blog",
-            url: "https://blog.animeku.org/player2.php?id=...",
-          },
-        ],
-        download: null,
-        filelions: null,
-        blog: "Qnoralgrak4rZEVT...",
-        raw: {
-          status: 200,
-          token: "2e91acd7a79cb51ad0d5cc3098393095",
-          src: "eyJjdCI6Ik42R3B0TU94YXZq...",
-          src_sd: "eyJjdCI6IlBTWUNsVExSUW...",
-          mirror: "eyJjdCI6InVhTkxJQkpka0...",
-        },
-      },
-    },
-  },
-] as const;
-
 type Endpoint = {
   method: string;
   path: string;
@@ -390,7 +221,6 @@ const aniwatchEndpoints = [
         title: "Boruto: Naruto Next Generations Episode 293",
         iframe: "https://zokoanime.video/stream/mal/34566/293/sub",
         sourceId: "13677",
-        xenHash: null,
         servers: [
           {
             name: "Fast Player",
@@ -604,12 +434,6 @@ export default function Home() {
             provider="aniwatch"
             endpoints={aniwatchEndpoints}
             open
-          />
-          <EndpointCollection
-            label="Legacy provider"
-            name="Kuronime"
-            provider="kuronime"
-            endpoints={kuronimeEndpoints}
           />
         </section>
       </div>

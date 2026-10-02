@@ -50,7 +50,6 @@ export async function getHTML(
       "Accept":
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
-      "Referer": "https://kuronime.sbs/",
       "Cache-Control": "no-cache",
       ...(options?.headers ?? {}),
     },
@@ -63,4 +62,3 @@ export async function getHTML(
 
   return response.text();
 }
-
